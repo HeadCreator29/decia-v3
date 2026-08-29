@@ -1,0 +1,16 @@
+[
+    {
+        "id": 1,
+        "date": "2026-08-25 02:53:33",
+        "type": "event",
+        "text": "el 25 de agosto de 2026 comenzamos a construir físicamente DECIA",
+        "source": "conversation"
+    },
+    {
+        "id": 2,
+        "date": "2026-08-25 02:56:18",
+        "type": "event",
+        "text": "hoy comenzamos oficialmente el desarrollo de DECIA.",
+        "source": "conversation"
+    }
+]

@@ -1,0 +1,30 @@
+[
+    {
+        "text": "Hoy comenzamos a construir DECIA.",
+        "id": 1,
+        "date": "Registro anterior",
+        "type": "memory",
+        "source": "conversation"
+    },
+    {
+        "text": "que hoy comenzamos a construir DECIA",
+        "id": 2,
+        "date": "Registro anterior",
+        "type": "memory",
+        "source": "conversation"
+    },
+    {
+        "text": "que el 25 de agosto de 2026 comenzamos a construir DECIA.",
+        "id": 3,
+        "date": "Registro anterior",
+        "type": "memory",
+        "source": "conversation"
+    },
+    {
+        "id": 4,
+        "date": "2026-08-25 02:53:10",
+        "type": "memory",
+        "text": "que DECIA nació como el sistema inteligente de DECA",
+        "source": "conversation"
+    }
+]

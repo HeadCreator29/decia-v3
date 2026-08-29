@@ -1,0 +1,121 @@
+{
+  "plans": [
+    {
+      "id": "plan_20260828_151947_086568",
+      "kind": "event",
+      "due_date": "2026-08-29",
+      "due_time": null,
+      "description": "tengo clase",
+      "status": "pending",
+      "created_at": "2026-08-28T15:19:47-04:00"
+    },
+    {
+      "id": "plan_20260828_151959_006833",
+      "kind": "event",
+      "due_date": "2026-09-04",
+      "due_time": null,
+      "description": "tengo cita",
+      "status": "pending",
+      "created_at": "2026-08-28T15:19:59-04:00"
+    },
+    {
+      "id": "plan_20260828_152013_450398",
+      "kind": "event",
+      "due_date": "2026-08-29",
+      "due_time": null,
+      "description": "Recuerda comprar el material",
+      "status": "pending",
+      "created_at": "2026-08-28T15:20:13-04:00"
+    },
+    {
+      "id": "plan_20260828_152048_027527",
+      "kind": "event",
+      "due_date": "2026-08-31",
+      "due_time": null,
+      "description": "Tengo que terminar DECA",
+      "status": "pending",
+      "created_at": "2026-08-28T15:20:48-04:00"
+    },
+    {
+      "id": "plan_20260828_152108_472912",
+      "kind": "event",
+      "due_date": "2026-08-29",
+      "due_time": null,
+      "description": "estudiar",
+      "status": "pending",
+      "created_at": "2026-08-28T15:21:08-04:00"
+    },
+    {
+      "id": "plan_20260828_152230_038195",
+      "kind": "event",
+      "due_date": "2026-08-29",
+      "due_time": "07:00",
+      "description": "Evento",
+      "status": "pending",
+      "created_at": "2026-08-28T15:22:30-04:00"
+    },
+    {
+      "id": "plan_20260828_170301_808005",
+      "kind": "event",
+      "due_date": "2026-08-29",
+      "due_time": "07:00",
+      "description": "tengo clase",
+      "status": "pending",
+      "created_at": "2026-08-28T17:03:01-04:00"
+    },
+    {
+      "id": "plan_20260828_170715_580578",
+      "kind": "event",
+      "due_date": "2026-08-29",
+      "due_time": null,
+      "description": "guardame comprar pan",
+      "status": "pending",
+      "created_at": "2026-08-28T17:07:15-04:00"
+    },
+    {
+      "id": "plan_20260828_171133_017311",
+      "kind": "event",
+      "due_date": "2026-08-29",
+      "due_time": "15:00",
+      "description": "tengo clase y reunion",
+      "status": "pending",
+      "created_at": "2026-08-28T17:11:33-04:00"
+    },
+    {
+      "id": "plan_20260828_171217_865980",
+      "kind": "event",
+      "due_date": "2026-08-29",
+      "due_time": "15:00",
+      "description": "reunion",
+      "status": "pending",
+      "created_at": "2026-08-28T17:12:17-04:00"
+    },
+    {
+      "id": "plan_20260828_171446_168975",
+      "kind": "event",
+      "due_date": "2026-08-29",
+      "due_time": null,
+      "description": "khe tengo",
+      "status": "pending",
+      "created_at": "2026-08-28T17:14:46-04:00"
+    },
+    {
+      "id": "plan_20260828_171446_171791",
+      "kind": "event",
+      "due_date": "2026-08-31",
+      "due_time": null,
+      "description": "tengo clase",
+      "status": "pending",
+      "created_at": "2026-08-28T17:14:46-04:00"
+    },
+    {
+      "id": "plan_20260828_171446_185630",
+      "kind": "event",
+      "due_date": "2026-09-18",
+      "due_time": null,
+      "description": "reunion",
+      "status": "pending",
+      "created_at": "2026-08-28T17:14:46-04:00"
+    }
+  ]
+}
