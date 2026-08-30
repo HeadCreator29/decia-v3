@@ -37,60 +37,60 @@ Chain strategy: feature-branch-chain
 
 ## Phase 2: Extract 16 Intent Plugins (TDD)
 
-- [ ] 2.1 Extract GREETING plugin: copy patterns verbatim from `intent_layer._init_patterns()`; write `tests/plugins/test_greeting.py`; register in registry; run full test suite — must pass identically; delete patterns from `_init_patterns()`
-- [ ] 2.2 Extract THANKS plugin: same workflow; write `tests/plugins/test_thanks.py`
-- [ ] 2.3 Extract EXIT plugin: same workflow; write `tests/plugins/test_exit.py`; note: will include `validate()` for exit negation in Phase 3
-- [ ] 2.4 Extract CALCULATE plugin: copy REGEX patterns with `entity_group="math"`; write `tests/plugins/test_calculate.py`; priority=5
-- [ ] 2.5 Extract TIME plugin: copy PHRASE + REGEX patterns; write `tests/plugins/test_time.py`; priority=10
-- [ ] 2.6 Extract DATE plugin: copy PHRASE + REGEX patterns; write `tests/plugins/test_date.py`; priority=10
-- [ ] 2.7 Extract DECIA_SELF plugin: copy 17 patterns (EXACT + PHRASE); write `tests/plugins/test_decia_self.py`; priority=5
-- [ ] 2.8 Extract DECIA_CREATOR plugin: copy 14 patterns (PHRASE + KEYWORD); write `tests/plugins/test_decia_creator.py`; priority=5
-- [ ] 2.9 Extract USER_NAME_ASK plugin: copy 9 patterns (EXACT + PHRASE); write `tests/plugins/test_user_name_ask.py`; priority=5
-- [ ] 2.10 Extract PREFERRED_NAME_ASK plugin: copy 4 patterns; write `tests/plugins/test_preferred_name_ask.py`; priority=5
-- [ ] 2.11 Extract USER_NAME_SET plugin: copy 7 REGEX patterns with `entity_group="user_name"`; write `tests/plugins/test_user_name_set.py`; priority=5
-- [ ] 2.12 Extract PREFERRED_NAME_SET plugin: copy 7 REGEX patterns with `entity_group="preferred_name"`; write `tests/plugins/test_preferred_name_set.py`; priority=5
-- [ ] 2.13 Extract MEMORY_CREATE plugin: copy 9 PHRASE patterns with `entity_group="memory"`; write `tests/plugins/test_memory_create.py`; priority=5
-- [ ] 2.14 Extract MEMORY_SEARCH plugin: copy 28 patterns (KEYWORD + REGEX + PHRASE); write `tests/plugins/test_memory_search.py`; priority=5
-- [ ] 2.15 Extract ARCHIVE_DIRECT plugin: copy 21 patterns (PHRASE + REGEX); write `tests/plugins/test_archive_direct.py`; priority=5
-- [ ] 2.16 Extract ARCHIVE_SEARCH plugin: copy 24 patterns (KEYWORD + PHRASE + REGEX); write `tests/plugins/test_archive_search.py`; priority=5
-- [ ] 2.17 Extract PLANNER_QUERY plugin: copy 6 REGEX patterns; write `tests/plugins/test_planner_query.py`; priority=5
+- [x] 2.1 Extract GREETING plugin: copy patterns verbatim from `intent_layer._init_patterns()`; write `tests/plugins/test_greeting.py`; register in registry; run full test suite — must pass identically; delete patterns from `_init_patterns()`
+- [x] 2.2 Extract THANKS plugin: same workflow; write `tests/plugins/test_thanks.py`
+- [x] 2.3 Extract EXIT plugin: same workflow; write `tests/plugins/test_exit.py`; note: will include `validate()` for exit negation in Phase 3
+- [x] 2.4 Extract CALCULATE plugin: copy REGEX patterns with `entity_group="math"`; write `tests/plugins/test_calculate.py`; priority=5
+- [x] 2.5 Extract TIME plugin: copy PHRASE + REGEX patterns; write `tests/plugins/test_time.py`; priority=10
+- [x] 2.6 Extract DATE plugin: copy PHRASE + REGEX patterns; write `tests/plugins/test_date.py`; priority=10
+- [x] 2.7 Extract DECIA_SELF plugin: copy 17 patterns (EXACT + PHRASE); write `tests/plugins/test_decia_self.py`; priority=5
+- [x] 2.8 Extract DECIA_CREATOR plugin: copy 14 patterns (PHRASE + KEYWORD); write `tests/plugins/test_decia_creator.py`; priority=5
+- [x] 2.9 Extract USER_NAME_ASK plugin: copy 9 patterns (EXACT + PHRASE); write `tests/plugins/test_user_name_ask.py`; priority=5
+- [x] 2.10 Extract PREFERRED_NAME_ASK plugin: copy 4 patterns; write `tests/plugins/test_preferred_name_ask.py`; priority=5
+- [x] 2.11 Extract USER_NAME_SET plugin: copy 7 REGEX patterns with `entity_group="user_name"`; write `tests/plugins/test_user_name_set.py`; priority=5
+- [x] 2.12 Extract PREFERRED_NAME_SET plugin: copy 7 REGEX patterns with `entity_group="preferred_name"`; write `tests/plugins/test_preferred_name_set.py`; priority=5
+- [x] 2.13 Extract MEMORY_CREATE plugin: copy 9 PHRASE patterns with `entity_group="memory"`; write `tests/plugins/test_memory_create.py`; priority=5
+- [x] 2.14 Extract MEMORY_SEARCH plugin: copy 28 patterns (KEYWORD + REGEX + PHRASE); write `tests/plugins/test_memory_search.py`; priority=5
+- [x] 2.15 Extract ARCHIVE_DIRECT plugin: copy 21 patterns (PHRASE + REGEX); write `tests/plugins/test_archive_direct.py`; priority=5
+- [x] 2.16 Extract ARCHIVE_SEARCH plugin: copy 24 patterns (KEYWORD + PHRASE + REGEX); write `tests/plugins/test_archive_search.py`; priority=5
+- [x] 2.17 Extract PLANNER_QUERY plugin: copy 6 REGEX patterns; write `tests/plugins/test_planner_query.py`; priority=5
 
 ## Phase 3: Special Logic Extraction
 
-- [ ] 3.1 Move `_PLANNER_RECALL_BANNED`, `_PLANNER_MARKER_SRC`, `_PLANNER_QUERY_WORDS_EXCLUDED` constants to `plugins/planner_create.py`; implement `PLANNER_CREATE.validate()` returning False for banned phrases matching `_PLANNER_RECALL_BANNED` regex
-- [ ] 3.2 Move `_has_exit_negation()` logic to `plugins/exit.py` as `EXIT.validate()` returning False when message contains "no" before "salir"
-- [ ] 3.3 Verify `_extract_archive_field()` stays in `IntentLayer` (shared by ARCHIVE_DIRECT/SEARCH); not moved to plugin
+- [x] 3.1 Move `_PLANNER_RECALL_BANNED`, `_PLANNER_MARKER_SRC`, `_PLANNER_QUERY_WORDS_EXCLUDED` constants to `plugins/planner_create.py`; implement `PLANNER_CREATE.validate()` returning False for banned phrases matching `_PLANNER_RECALL_BANNED` regex
+- [x] 3.2 Move `_has_exit_negation()` logic to `plugins/exit.py` as `EXIT.validate()` returning False when message contains "no" before "salir"
+- [x] 3.3 Verify `_extract_archive_field()` stays in `IntentLayer` (shared by ARCHIVE_DIRECT/SEARCH); not moved to plugin
 
 ## Phase 4: Cleanup & Optimization
 
-- [ ] 4.1 Remove `_init_patterns()` entirely from `IntentLayer`; replace `self._patterns` initialization with registry iteration in `classify()`
-- [ ] 4.2 Add auto-discovery: `pkgutil.walk_packages()` to auto-import plugins from `app/brain.plugins`, with explicit import fallback list for Phase 2 reliability
-- [ ] 4.3 Performance benchmark: run `tests/test_intent_stress.py`; confirm p95 latency within 5% of baseline; memory delta < 10MB
-- [ ] 4.4 Update docstrings and comments in `intent_layer.py` to reflect registry-based pattern source
+- [x] 4.1 Remove `_init_patterns()` entirely from `IntentLayer`; replace `self._patterns` initialization with registry iteration in `classify()`
+- [x] 4.2 Add auto-discovery: `pkgutil.iter_modules()` to auto-import plugins from `app/brain.plugins`, with explicit import fallback list for Phase 2 reliability
+- [x] 4.3 Performance benchmark: run `tests/test_intent_stress.py`; confirm p95 latency within 5% of baseline; memory delta < 10MB
+- [x] 4.4 Update docstrings and comments in `intent_layer.py` to reflect registry-based pattern source
 
 ## Phase 5: Verification
 
-- [ ] 5.1 Run full golden master: `python -m pytest tests/test_intent_layer.py -v` — all 100+ tests pass unchanged
-- [ ] 5.2 Run regression matrix: `python -m pytest tests/plugins/test_regression.py -v` — parametrized matrix from `test_intent_layer.py` cases produces identical `ClassifyResult`
-- [ ] 5.3 Run stress test: `python -m pytest tests/test_intent_stress.py -v` — p95 latency within 5% of baseline
-- [ ] 5.4 Manual smoke test: classify real-world queries covering all 16 intents; verify confidence tiers (SEGURO/PROBABLE/AMBIGUO)
-- [ ] 5.5 Archive delta spec: capture changes for delta spec synchronization
+- [x] 5.1 Run full golden master: `python -m pytest tests/test_intent_layer.py -v` — all 100+ tests pass unchanged
+- [x] 5.2 Run regression matrix: `python -m pytest tests/plugins/test_regression.py -v` — parametrized matrix from `test_intent_layer.py` cases produces identical `ClassifyResult`
+- [x] 5.3 Run stress test: `python -m pytest tests/test_intent_stress.py -v` — p95 latency within 5% of baseline
+- [x] 5.4 Manual smoke test: classify real-world queries covering all 16 intents; verify confidence tiers (SEGURO/PROBABLE/AMBIGUO)
+- [x] 5.5 Archive delta spec: capture changes for delta spec synchronization
 
 ## Open Questions (carry forward)
 
-- [ ] Should `AMBIGUOUS_INPUT` and `FREE_TALK` plugins have empty pattern lists or be handled as special cases in orchestrator? (Exploration suggests empty lists; current monolith has empty list for FREE_TALK)
-- [ ] Confirm priority values for all 16 plugins — design only shows examples (GREETING=10, EXIT=10). Need explicit priority per intent for deterministic tie-breaking.
-- [ ] Auto-discovery in Phase 4: use `pkgutil.iter_modules()` or `importlib.metadata` entry points? (pkgutil simpler, no setuptools dependency)
+- [x] Should `AMBIGUOUS_INPUT` and `FREE_TALK` plugins have empty pattern lists or be handled as special cases in orchestrator? (Exploration suggests empty lists; current monolith has empty list for FREE_TALK) -- **Resolved: empty pattern lists as plugins**
+- [x] Confirm priority values for all 16 plugins -- design only shows examples (GREETING=10, EXIT=10). Need explicit priority per intent for deterministic tie-breaking. -- **Resolved: all 16 explicit priorities set**
+- [x] Auto-discovery in Phase 4: use `pkgutil.iter_modules()` or `importlib.metadata` entry points? (pkgutil simpler, no setuptools dependency) -- **Resolved: pkgutil.iter_modules()**
 
 ## Workload & PR Boundary Summary
 
-- **Total tasks**: 33 concrete implementation tasks across 5 phases
+- **Total tasks**: 37 concrete implementation tasks across 5 phases (all complete)
 - **Estimated changed lines**: 800 (HIGH — over 400-line budget)
 - **Chain strategy**: feature-branch-chain
   - PR #1 base: feature/tracker branch (infrastructure)
   - PR #2 base: PR #1 branch (GREETING + THANKS + registry)
   - PR #3-4 base: previous PR branch (remaining plugins batched)
-  - PR #5 base: PR #4 branch (special logic extraction)
-  - PR #6 base: PR #5 branch (cleanup + verification)
+  - PR #4 base: PR #3 branch (special logic extraction)
+  - PR #5 base: PR #4 branch (cleanup + verification)
 - **Review budget impact**: 800 lines exceeds 400 budget; chained PRs required. Each PR stays under ~150-200 lines of changed code.
 - **Rollback boundary**: Revert specific PR's plugin modules + `intent_layer.py` changes; golden master test suite provides safety net at each step.
