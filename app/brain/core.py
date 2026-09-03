@@ -21,6 +21,17 @@ from brain.intent_types import (
     FREE_TALK,
     PLANNER_CREATE,
     PLANNER_QUERY,
+    DECISION_CREATE,
+    DECISION_CONFIRM,
+    PREDICTION_CREATE,
+    PREDICTION_REVIEW,
+    LEARNING_CREATE,
+    REFLECTION_CREATE,
+    REFLECTION_APPROVE,
+    IDENTITY_PROPOSE,
+    IDENTITY_APPROVE,
+    TEMPORAL_QUERY,
+    PATTERN_SUGGEST,
 )
 
 from brain.followup import (
@@ -46,6 +57,12 @@ from brain.handlers import (
     ambiguous_input_response,
     planner_create,
     planner_query,
+    handle_reflection_create,
+    handle_reflection_approve,
+    handle_identity_propose,
+    handle_identity_approve,
+    handle_temporal_query,
+    handle_pattern_suggest,
 )
 
 
@@ -65,6 +82,7 @@ _SAFE_INTENTS = {
     DECIA_SELF,
     DECIA_CREATOR,
     ARCHIVE_DIRECT,
+    LEARNING_CREATE,
 }
 
 
@@ -157,6 +175,60 @@ def think(message, context=None):
 
         return response
 
+    if intent_result.intent == REFLECTION_CREATE:
+        response = handle_reflection_create(
+            message, intent_result.entities, context
+        )
+        if response:
+            return _finish(
+                response, invalidate=True,
+            )
+
+    if intent_result.intent == REFLECTION_APPROVE:
+        response = handle_reflection_approve(
+            message, intent_result.entities, context
+        )
+        if response:
+            return _finish(
+                response, invalidate=True,
+            )
+
+    if intent_result.intent == IDENTITY_PROPOSE:
+        response = handle_identity_propose(
+            message, intent_result.entities, context
+        )
+        if response:
+            return _finish(
+                response, invalidate=True,
+            )
+
+    if intent_result.intent == IDENTITY_APPROVE:
+        response = handle_identity_approve(
+            message, intent_result.entities, context
+        )
+        if response:
+            return _finish(
+                response, invalidate=True,
+            )
+
+    if intent_result.intent == TEMPORAL_QUERY:
+        response = handle_temporal_query(
+            message, intent_result.entities, context
+        )
+        if response:
+            return _finish(
+                response, invalidate=True,
+            )
+
+    if intent_result.intent == PATTERN_SUGGEST:
+        response = handle_pattern_suggest(
+            message, intent_result.entities, context
+        )
+        if response:
+            return _finish(
+                response, invalidate=True,
+            )
+
     if is_safe and has_confidence:
 
         IntentLayer.log_result(
@@ -215,6 +287,52 @@ def think(message, context=None):
             if response:
                 return _finish(
                     response, mode="archive",
+                )
+
+        if intent_result.intent == DECISION_CREATE:
+            response = handle_decision_create(
+                message, intent_result.entities, context
+            )
+            if response:
+                return _finish(
+                    response, invalidate=True,
+                )
+
+        if intent_result.intent == DECISION_CONFIRM:
+            response = handle_decision_confirm(
+                message, intent_result.entities, context
+            )
+            if response:
+                return _finish(
+                    response, invalidate=True,
+                )
+
+        if intent_result.intent == PREDICTION_CREATE:
+            response = handle_prediction_create(
+                message, intent_result.entities, context
+            )
+            if response:
+                return _finish(
+                    response, invalidate=True,
+                )
+
+        if intent_result.intent == PREDICTION_REVIEW:
+            response = handle_prediction_review(
+                message, intent_result.entities, context
+            )
+            if response:
+                return _finish(
+                    response, invalidate=True,
+                )
+
+        if intent_result.intent == LEARNING_CREATE:
+            from brain.handlers import handle_learning_create
+            response = handle_learning_create(
+                message, intent_result.entities, context
+            )
+            if response:
+                return _finish(
+                    response, invalidate=True,
                 )
 
     else:
