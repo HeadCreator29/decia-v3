@@ -130,6 +130,53 @@ def save_user(data):
 # ==========================================
 
 
+# ==========================================
+# DECISIONES (placeholder para Phase 2+)
+# ==========================================
+
+
+def get_decisions():
+    return load_archive("decisions.json")
+
+
+def save_decisions(data):
+    path = ARCHIVE_PATH / "decisions.json"
+    try:
+        with open(path, "w", encoding="utf-8") as file:
+            json.dump(data, file, ensure_ascii=False, indent=2)
+    except Exception as error:
+        print(
+            f"[DECIA ARCHIVE] "
+            f"Error al guardar decisions: {error}"
+        )
+
+
+# ==========================================
+# PREDICTIONS (placeholder para Phase 3+)
+# ==========================================
+
+
+def get_predictions():
+    return load_archive("predictions.json")
+
+
+def save_predictions(data):
+    path = ARCHIVE_PATH / "predictions.json"
+    try:
+        with open(path, "w", encoding="utf-8") as file:
+            json.dump(data, file, ensure_ascii=False, indent=2)
+    except Exception as error:
+        print(
+            f"[DECIA ARCHIVE] "
+            f"Error al guardar predictions: {error}"
+        )
+
+
+# ==========================================
+# HISTORY
+# ==========================================
+
+
 def get_history():
 
     return load_archive("history.json")
@@ -1252,3 +1299,24 @@ def backup_corrupted_memories():
     except Exception:
 
         return False
+
+
+# ==========================================
+# MIGRATION ENTRY POINT
+# ==========================================
+
+
+def run_migration(dry_run: bool = True) -> dict:
+    """Run the v2 schema migration entry point.
+
+    Delegates to `data.archive.migrations.migrate_memories_v2.main()`.
+
+    Args:
+        dry_run: If True, only preview without writing files.
+
+    Returns:
+        Migration report dict.
+    """
+    from data.archive.migrations.migrate_memories_v2 import migrate_memories
+
+    return migrate_memories(dry_run=dry_run)
