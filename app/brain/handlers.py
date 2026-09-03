@@ -21,6 +21,11 @@ from services.planner import (
     load_plans,
 )
 
+from services.plugins.decision import DecisionPlugin
+from services.plugins.prediction import PredictionPlugin
+from services.plugins.learning import LearningPlugin
+from services.plugins.reflection import ReflectionPlugin
+
 from personality.personality import (
     NAME,
     ROLE,
@@ -1152,12 +1157,280 @@ def format_archive_response(result):
 
 
 # ==========================================
-# ENTRADAS AMBIGUAS
+# DECISION FLOWS HANDLERS
 # ==========================================
 
 
+def handle_decision_create(message, entities, context) -> str:
+    """Handle DECISION_CREATE intent.
+
+    Creates a new decision record from conversation input.
+    Returns a confirmation message.
+
+    Expected entities:
+        decision_problem: {problem, arguments, decision, rationale, confidence}
+    """
+    plugin = DecisionPlugin()
+
+    problem = entities.get("decision_problem", {}).get("problem", "")
+    arguments = entities.get("decision_problem", {}).get("arguments", [])
+    decision = entities.get("decision_problem", {}).get("decision", "")
+    rationale = entities.get("decision_problem", {}).get("rationale", "")
+    confidence = entities.get("decision_problem", {}).get("confidence", 0.7)
+
+    if not problem or not decision:
+        return "No identifiqué un problema de decisión claro. ¿Podrías reformular?"
+
+    result = plugin.create(
+        problem=problem,
+        arguments=arguments or ["No specified"],
+        decision=decision,
+        rationale=rationale or "No rationale provided",
+        confidence=confidence,
+    )
+
+    decision_id = result["id"]
+    status = result["status"]
+
+    return (
+        f"Decision registrada con ID {decision_id}. "
+        f"Estado: {status}. "
+        f"Puedo confirmarla later con 'confirmo decisión' y el resultado."
+    )
+
+
+def handle_decision_confirm(message, entities, context) -> str:
+    """Handle DECISION_CONFIRM intent.
+
+    Confirms a decision with outcome and learning.
+    Links the decision to relevant memories.
+
+    Expected entities:
+        decision_id: The decision UUID string
+        outcome: The result outcome
+        learning: Learning from the outcome
+        memory_ids: Optional list of memory IDs to link
+    """
+    plugin = DecisionPlugin()
+
+    decision_id = entities.get("decision_id", "")
+    outcome = entities.get("outcome", "")
+    learning = entities.get("learning", "")
+    memory_ids = entities.get("memory_ids", [])
+
+    if not decision_id:
+        return "No identifiqué un ID de decisión. ¿De qué decisión hablas?"
+
+    result = plugin.confirm(
+        decision_id=decision_id,
+        outcome=outcome or "No outcome specified",
+        learning=learning or "No learning recorded",
+    )
+
+    if result is None:
+        return f"No encontré una decisión con ID {decision_id}."
+
+    status = result["status"]
+
+    # Link memories if provided
+    for memory_id in (memory_ids or []):
+        plugin.link_memory(
+            decision_id=decision_id,
+            memory_id=memory_id,
+            relation_type="supports",
+        )
+
+    return (
+        f"Decision {decision_id} confirmada. "
+        f"Estado: {status}. "
+        f"Outcome: {outcome}. "
+        f"Learning: {learning}. "
+        f"Memorias vinculadas: {len(memory_ids) or 0}."
+    )
+
+
 # ==========================================
-# NEAR-BARE HISTÓRICO AMBIGUO (8.12)
+# REFLECTION FLOWS HANDLERS
+# ==========================================
+
+
+def handle_reflection_create(message, entities, context) -> str:
+    """Handle REFLECTION_CREATE intent.
+
+    Creates a new reflection draft from conversation input.
+    Returns a confirmation message.
+
+    Expected entities:
+        reflection_text: The reflection text content (string or dict)
+    """
+    plugin = ReflectionPlugin()
+
+    reflection_text = entities.get("reflection_text", "")
+    # Handle both string and dict entity formats
+    if isinstance(reflection_text, dict):
+        reflection_text = reflection_text.get("reflection_text", "")
+
+    if not reflection_text:
+        return "No identifiqué un texto de reflexión claro. ¿Podrías reformular?"
+
+    result = plugin.draft(
+        conversation_id=context.get("conversation_id", "") if context else "",
+        draft_content=reflection_text,
+    )
+
+    reflection_id = result["id"]
+    status = result["status"]
+
+    return (
+        f"Borrador de reflexión registrado con ID {reflection_id}. "
+        f"Estado: {status}. "
+        f"Puedo aprobarla later con 'aprobar reflexión' y el contenido."
+    )
+
+
+def handle_reflection_approve(message, entities, context) -> str:
+    """Handle REFLECTION_APPROVE intent.
+
+    Approves/edits a reflection draft.
+    Returns a confirmation message.
+
+    Expected entities:
+        reflection_id: The reflection UUID string
+        edited_content: Optional user edits/approval content
+    """
+    plugin = ReflectionPlugin()
+
+    reflection_id = entities.get("reflection_id", "")
+    edited_content = entities.get("edited_content", "")
+
+    if not reflection_id:
+        return "No identifiqué un ID de reflexión. ¿De qué reflexión hablas?"
+
+    result = plugin.approve(
+        reflection_id=reflection_id,
+        edited_content=edited_content or "",
+    )
+
+    if result is None:
+        return f"No encontré una reflexión con ID {reflection_id}."
+
+    status = result["status"]
+
+    if status == "APPROVED":
+        return (
+            f"Reflexión {reflection_id} aprobada. "
+            f"Contenido: '{result['approved_content']}'."
+        )
+    else:
+        return (
+            f"Reflexión {reflection_id} en borrador. "
+            f"Estado: {status}."
+        )
+
+
+# ==========================================
+# PREDICTION FLOWS HANDLERS
+# ==========================================
+
+
+def handle_prediction_create(message, entities, context) -> str:
+    """Handle PREDICTION_CREATE intent.
+
+    Creates a new prediction record from conversation input.
+    Returns a confirmation with review date.
+
+    Expected entities:
+        prediction_text: The prediction statement
+        horizons: List of horizon dicts with {label, timeframe, target_date}
+        confidence: Initial confidence score (0.0-1.0)
+        reasons: List of reason strings
+    """
+    plugin = PredictionPlugin()
+
+    prediction_text = entities.get("prediction_text", {}).get("prediction_text", "")
+    horizons = entities.get("prediction_text", {}).get("horizons", [])
+    confidence = entities.get("prediction_text", {}).get("confidence", 0.5)
+    reasons = entities.get("prediction_text", {}).get("reasons", [])
+
+    if not prediction_text:
+        return "No identifiqué un texto de predicción claro. ¿Podrías reformular?"
+
+    result = plugin.create(
+        prediction_text=prediction_text,
+        horizons=horizons or [],
+        confidence=confidence,
+        reasons=reasons or [],
+    )
+
+    prediction_id = result["id"]
+    status = result["status"]
+
+    # Schedule initial review date (7 days from now)
+    from datetime import datetime, timedelta, timezone
+
+    review_date = (datetime.now().astimezone() + timedelta(days=7)).isoformat()
+    plugin.schedule_review(prediction_id=prediction_id, review_date=review_date)
+
+    return (
+        f"Predicción registrada con ID {prediction_id}. "
+        f"Estado: {status}. "
+        f"Puedo revisarla later con 'revisar predicción' y el resultado. "
+        f"Fecha de revisión: {review_date[:10]}."
+    )
+
+
+def handle_prediction_review(message, entities, context) -> str:
+    """Handle PREDICTION_REVIEW intent.
+
+    Shows due/upcoming predictions and allows resolution.
+
+    Expected entities:
+        prediction_id: The prediction UUID string (optional)
+    """
+    plugin = PredictionPlugin()
+
+    prediction_id = entities.get("prediction_id", "")
+
+    if prediction_id:
+        # Get specific prediction
+        prediction = plugin.get_by_id(prediction_id)
+        if prediction is None:
+            return f"No encontré una predicción con ID {prediction_id}."
+
+        return (
+            f"Predicción ID {prediction_id}: "
+            f"'{prediction['prediction_text']}' "
+            f"Estado: {prediction['status']}. "
+            f"Confianza: {prediction['confidence']}. "
+            f"Horizontes: {len(prediction.get('horizons', []))}. "
+            f"Razón: {prediction.get('reasons', ['Ninguna'])[0]}."
+        )
+    else:
+        # Show due reviews
+        due = plugin.get_due_reviews()
+        all_preds = plugin.get_by_status("OPEN")
+
+        if due:
+            lines = []
+            for p in due[:5]:  # Show max 5
+                review_date = p.get("review_date", "sin fecha")
+                lines.append(
+                    f"- ID {p['id']}: '{p['prediction_text'][:50]}...' "
+                    f"Estado: {p['status']} | "
+                    f"Revisar: {review_date[:10] if review_date else 'pendiente'}"
+                )
+            return "Predicciones por revisar:\n" + "\n".join(lines)
+
+        if all_preds:
+            return (
+                f"No tienes predicciones por revisar en este momento. "
+                f"Tienes {len(all_preds)} predicción(iones) abierta(s)."
+            )
+
+        return "No tienes predicciones registradas."
+
+    # ==========================================
+    # NEAR-BARE HISTÓRICO AMBIGUO (8.12)
 # Whitelist de consultas histórico-ambiguas
 # incompletas: clarificación determinista,
 # sin búsqueda en history.json ni OLLAMA.
@@ -1925,5 +2198,375 @@ def planner_query(message):
                 f"{format_date_spanish(plan_date)} "
                 f"— {plan_desc}"
             )
+
+    return "\n".join(lines)
+
+
+def handle_learning_create(message, entities, context) -> str:
+    """Handle LEARNING_CREATE intent.
+
+    Creates a new learning entry from conversation input.
+    Returns a confirmation message.
+
+    Expected entities:
+        lesson_text: The learned text/content
+    """
+    from services.plugins.learning import LearningPlugin
+
+    plugin = LearningPlugin()
+
+    lesson_text = entities.get("lesson_text", {}).get("lesson_text", "")
+    if not lesson_text:
+        return "No identifiqué una lección clara. ¿Podrías decirme qué aprendiste?"
+
+    # Auto-capture as a learning entry
+    decision_id = entities.get("decision_id", "") or ""
+    prediction_id = entities.get("prediction_id", "") or ""
+
+    if decision_id:
+        trigger_type = "DECISION"
+        trigger_id = decision_id
+        expected = ""
+        actual = lesson_text
+    elif prediction_id:
+        trigger_type = "PREDICTION"
+        trigger_id = prediction_id
+        expected = ""
+        actual = lesson_text
+    else:
+        trigger_type = "DECISION"
+        trigger_id = ""
+        expected = ""
+        actual = lesson_text
+
+    # Capture the learning
+    result = plugin.capture(
+        trigger_id=trigger_id,
+        trigger_type=trigger_type,
+        expected=expected,
+        actual=actual,
+        confidence=0.8,
+    )
+
+    learning_id = result["id"]
+    lesson = result["lesson"]
+    confidence = result["confidence"]
+
+    return (
+        f"Lección aprendida registrada con ID {learning_id}. "
+        f"Confianza: {confidence}. "
+        f"Lección: {lesson}. "
+        f"Puedo capturar más aprendizajes con 'aprendi que...'"
+    )
+
+
+# ==========================================
+# IDENTITY PROPOSE / APPROVE FLOWS
+# ==========================================
+
+
+def handle_identity_propose(message, entities, context) -> str:
+    """Handle IDENTITY_PROPOSE intent.
+
+    Creates an identity change proposal from conversation input.
+    Returns a confirmation message with the proposal ID.
+
+    Expected entities:
+        identity_changes: dict of changes to propose (e.g., new values, principles)
+    """
+    from brain.plugins.identity_propose import PLUGIN as PROPOSE_PLUGIN
+
+    plugin = PROPOSE_PLUGIN
+
+    # Handle both string and dict entity formats
+    identity_changes = entities.get("identity_changes", "")
+    if isinstance(identity_changes, dict):
+        identity_changes = identity_changes.get("identity_changes", "")
+    
+    if not identity_changes:
+        return (
+            "No identifiqué cambios de identidad claros. "
+            "¿Podrías decirme qué valores, principios o reglas deseas modificar?"
+        )
+
+    # Parse the identity changes string into a changes dict
+    # Expected format: "valores honestidad transparencia" or "principios nuevo principio"
+    changes = {}
+    parts = identity_changes.split()
+    if parts:
+        key = parts[0]  # First word is the field (valores, principios, reglas, etc.)
+        value = " ".join(parts[1:]) if len(parts) > 1 else ""
+        if key in ("valores", "principios", "reglas"):
+            changes[key] = [v.strip() for v in value.split(",")] if value else [value]
+        else:
+            changes[key] = value if value else key
+
+    # Create the proposal via the plugin's internal mechanism
+    # The IdentityCorePlugin will handle the actual proposal creation
+    from app.services.plugins.identity_core import IdentityCorePlugin
+
+    identity_core = IdentityCorePlugin(storage_path=context.get("storage_path") if context else None)
+
+    proposal_result = identity_core.propose_change(changes=changes)
+
+    proposal_id = proposal_result["proposal"]["proposal_id"]
+    changes_parts = []
+    for k, v in changes.items():
+        if isinstance(v, list):
+            changes_parts.append(f"{k}: {', '.join(v)}")
+        else:
+            changes_parts.append(f"{k}: {v}")
+    changes_summary = ", ".join(changes_parts)
+
+    return (
+        f"Propuesta de cambio de identidad registrada con ID {proposal_id}. "
+        f"Cambios propuestos: {changes_summary}. "
+        f"Para aprobar usa 'aprobar identidad' o 'aceptar propuesta identidad'."
+    )
+
+
+def handle_identity_approve(message, entities, context) -> str:
+    """Handle IDENTITY_APPROVE intent.
+
+    Approves a proposed identity change. Requires explicit ceremony
+    for hard limits (user confirmation via 'approved_by').
+
+    Expected entities:
+        proposal_id: The proposal ID to approve (may include approved_by suffix)
+        approved_by: The user/actor performing the ceremony (optional)
+    """
+    from brain.plugins.identity_approve import PLUGIN as APPROVE_PLUGIN
+
+    # First, check if this is a ceremony request
+    # The proposal_id entity may contain both proposal_id and approved_by
+    raw_proposal_id = entities.get("proposal_id", "")
+    approved_by = entities.get("approved_by", "")
+
+    # Parse raw_proposal_id to extract proposal_id and approved_by
+    # Expected format: "prop_... confirmo" or "prop_... nombre_usuario"
+    proposal_id = raw_proposal_id
+    if raw_proposal_id and not approved_by:
+        parts = raw_proposal_id.strip().split()
+        if len(parts) >= 2:
+            proposal_id = parts[0]
+            approved_by = " ".join(parts[1:])
+
+    if not proposal_id:
+        return (
+            "No identifiqué un ID de propuesta de identidad. "
+            "¿De qué propuesta hablas? Usa 'aceptar propuesta identidad'."
+        )
+
+    if not approved_by:
+        # No approved_by — require ceremony prompt
+        return (
+            "Para aprobar cambios de identidad se requiere una ceremonia "
+            "de confirmación. Confirma con tu nombre o 'confirmo' para "
+            "proceder con la aprobación."
+        )
+
+    from app.services.plugins.identity_core import IdentityCorePlugin
+
+    identity_core = IdentityCorePlugin(storage_path=context.get("storage_path") if context else None)
+
+    try:
+        updated = identity_core.approve_change(
+            proposal_id=proposal_id, approved_by=approved_by
+        )
+        new_version = updated.get("version", 1)
+        return (
+            f"Cambio de identidad aprobado. "
+            f"Nueva versión: v{new_version}. "
+            f"Registro agregado al audit log."
+        )
+    except ValueError as e:
+        return f"No pude aprobar el cambio: {e}"
+
+
+# ==========================================
+# TEMPORAL QUERY HANDLER
+# ==========================================
+
+
+def handle_temporal_query(message, entities, context) -> str:
+    """Handle TEMPORAL_QUERY intent.
+
+    Queries memories, events, and other archive data across a time range.
+    Returns a fused chronological result.
+
+    Expected entities:
+        time_range: Dict with start/end dates or year/month keywords
+    """
+    from app.services.plugins.search import SearchPlugin
+    from app.services.archive import get_history
+
+    plugin = SearchPlugin()
+
+    # Extract time range from entities
+    time_range = entities.get("time_range", "")
+    if isinstance(time_range, dict):
+        time_range = time_range.get("time_range", "")
+
+    if not time_range:
+        return "No identifiqué un rango temporal claro. ¿Podrías decirme qué período buscas?"
+
+    # Parse time range - simple approach for year/month queries
+    # For now, use the SearchPlugin query with date range filter
+    # The entity might contain year/month keywords
+    
+    # Try to extract year from the query
+    year_match = re.search(r"\b(20\d{2})\b", time_range)
+    month_match = re.search(r"\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b", time_range, re.IGNORECASE)
+    
+    start_date = None
+    end_date = None
+    
+    if year_match:
+        year = int(year_match.group(1))
+        start_date = f"{year}-01-01"
+        end_date = f"{year}-12-31"
+    
+    if month_match:
+        month_name = month_match.group(1).lower()
+        months = {
+            "enero": 1, "febrero": 2, "marzo": 3, "abril": 4,
+            "mayo": 5, "junio": 6, "julio": 7, "agosto": 8,
+            "septiembre": 9, "octubre": 10, "noviembre": 11, "diciembre": 12
+        }
+        month = months.get(month_name)
+        if month:
+            if start_date:
+                # Year already set, just narrow to month
+                start_date = f"{year}-{month:02d}-01"
+                if month == 12:
+                    end_date = f"{year+1}-01-01"
+                else:
+                    end_date = f"{year}-{month+1:02d}-01"
+            else:
+                # Just month, assume current year
+                from datetime import datetime
+                year = datetime.now().year
+                start_date = f"{year}-{month:02d}-01"
+                if month == 12:
+                    end_date = f"{year+1}-01-01"
+                else:
+                    end_date = f"{year}-{month+1:02d}-01"
+
+    if start_date and end_date:
+        # Search memories in date range
+        result = plugin.query("", {"date_range": (start_date, end_date), "limit": 20})
+        memories = result.get("results", [])
+        
+        # Also search history
+        history = get_history()
+        events = history.get("events", [])
+        filtered_events = []
+        for e in events:
+            event_date = e.get("date", "")
+            if start_date <= event_date <= end_date:
+                filtered_events.append(e)
+        
+        # Fuse results chronologically
+        fused = []
+        for m in memories:
+            fused.append({
+                "date": m.get("date", ""),
+                "type": "memory",
+                "content": m.get("content", ""),
+            })
+        for e in filtered_events:
+            fused.append({
+                "date": e.get("date", ""),
+                "type": "event",
+                "content": f"{e.get('title', '')}: {e.get('description', '')}",
+            })
+        
+        fused.sort(key=lambda x: x["date"])
+        
+        if not fused:
+            return f"No hay memorias ni eventos registrados entre {start_date} y {end_date}."
+        
+        lines = [f"Resultados temporales ({start_date} a {end_date}):"]
+        for item in fused[:20]:
+            date_str = item.get("date", "")
+            content = item.get("content", "")[:80]
+            lines.append(f"  {date_str} [{item['type']}] {content}")
+        
+        return "\n".join(lines)
+    
+    return "No pude identificar un rango temporal válido. Especifica año o mes."
+
+
+# ==========================================
+# PATTERN SUGGEST HANDLER
+# ==========================================
+
+
+def handle_pattern_suggest(message, entities, context) -> str:
+    """Handle PATTERN_SUGGEST intent.
+
+    Returns detected patterns and suggested planner tasks.
+    """
+    from app.services.plugins.patterns import PatternsPlugin
+
+    plugin = PatternsPlugin()
+
+    # Extract domain filter if provided
+    domains = None
+    pattern_query = entities.get("pattern_query", "")
+    if isinstance(pattern_query, dict):
+        pattern_query = pattern_query.get("pattern_query", "")
+    
+    # Check for domain keywords in the query
+    domain_keywords = {
+        "memoria": "memory",
+        "memorias": "memory",
+        "decisión": "decision",
+        "decisiones": "decision",
+        "predicción": "prediction",
+        "predicciones": "prediction",
+        "aprendizaje": "learning",
+        "aprendizajes": "learning",
+        "reflexión": "reflection",
+        "reflexiones": "reflection",
+    }
+    
+    for kw, domain in domain_keywords.items():
+        if kw in pattern_query.lower():
+            domains = [domain]
+            break
+
+    # Detect patterns
+    patterns = plugin.detect_recurring_patterns(domains=domains)
+
+    if not patterns:
+        return "No se detectaron patrones recurrentes en los datos actuales."
+
+    # Format response
+    lines = ["Patrones detectados:"]
+    all_tasks = []
+    
+    for i, pattern in enumerate(patterns[:10], 1):
+        theme = pattern.get("theme", "")
+        occ = pattern.get("occurrences", 0)
+        ptype = pattern.get("type", "")
+        tasks = pattern.get("suggested_tasks", [])
+        
+        lines.append(f"  {i}. {theme} ({ptype}) — {occ} ocurrencias")
+        
+        for task in tasks:
+            task_desc = task.get("title", "")
+            freq = task.get("frequency", "")
+            reason = task.get("reason", "")
+            lines.append(f"     → Tarea sugerida: {task_desc} ({freq})")
+            all_tasks.append({
+                "title": task_desc,
+                "frequency": freq,
+                "reason": reason,
+            })
+
+    if all_tasks:
+        lines.append(f"\nTotal tareas sugeridas: {len(all_tasks)}")
+        lines.append("Usa 'recuerdame' para agendar alguna.")
 
     return "\n".join(lines)

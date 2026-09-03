@@ -31,6 +31,7 @@ from brain.intent_types import (
     EXIT,
     AMBIGUOUS_INPUT,
     FREE_TALK,
+    LEARNING_CREATE,
     CONFIDENCE_SEGURO,
     CONFIDENCE_PROBABLE,
     CONFIDENCE_AMBIGUO,
@@ -52,6 +53,7 @@ _SAFE_INTENTS = {
     DECIA_SELF,
     DECIA_CREATOR,
     ARCHIVE_DIRECT,
+    LEARNING_CREATE,
 }
 
 
@@ -100,10 +102,13 @@ class IntentLayer:
         discovered = self._discover_plugins_pkgutil()
         if discovered:
             for mod in discovered:
-                self._registry.register(mod.plugin)
+                # Support both 'plugin' (legacy) and 'PLUGIN' (new) attributes
+                plugin = getattr(mod, "plugin", getattr(mod, "PLUGIN", None))
+                if plugin:
+                    self._registry.register(plugin)
             return
 
-        # Fallback: explicit imports for reliability
+# Fallback: explicit imports for reliability
         plugin_module_names = [
             "brain.plugins.greeting",
             "brain.plugins.thanks",
@@ -125,6 +130,11 @@ class IntentLayer:
             "brain.plugins.free_talk",
             "brain.plugins.planner_create",
             "brain.plugins.planner_query",
+            "brain.plugins.learning_create",
+            "brain.plugins.reflection_create",
+            "brain.plugins.reflection_approve",
+            "brain.plugins.identity_propose",
+            "brain.plugins.identity_approve",
         ]
 
         for mod_name in plugin_module_names:
@@ -151,7 +161,10 @@ class IntentLayer:
             ):
                 try:
                     module = importlib.import_module(f"brain.plugins.{modname}")
+                    # Check for both 'plugin' (legacy) and 'PLUGIN' (new standard)
                     if hasattr(module, "plugin"):
+                        discovered.append(module)
+                    elif hasattr(module, "PLUGIN"):
                         discovered.append(module)
                 except Exception:
                     # Continue on per-module failure; fallback to explicit list
@@ -370,7 +383,11 @@ class IntentLayer:
 
         if pattern.value in normalized:
 
-            return pattern.weight
+            score = pattern.weight
+            for boost_keyword, boost_value in pattern.boosts.items():
+                if boost_keyword in normalized:
+                    score += boost_value
+            return score
 
         return 0
 
