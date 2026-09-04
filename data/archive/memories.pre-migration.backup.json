@@ -1,0 +1,18 @@
+{
+  "memories": [
+    {
+      "id": "1",
+      "content": "First memory",
+      "text": "First memory content",
+      "type": "memory",
+      "source": "conversation"
+    },
+    {
+      "id": "2",
+      "content": "Second memory",
+      "text": "Second memory content",
+      "type": "memory",
+      "source": "conversation"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DECIA Memory Schema v2",
+  "type": "object",
+  "required": [
+    "id",
+    "content",
+    "date",
+    "source",
+    "type",
+    "confidence",
+    "relations",
+    "encryption_flag",
+    "metadata",
+    "version",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique memory identifier"
+    },
+    "content": {
+      "type": "string",
+      "description": "The memory content text"
+    },
+    "date": {
+      "type": "string",
+      "description": "Date of the memory (YYYY-MM-DD)"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "conversation",
+        "user",
+        "decia",
+        "migration"
+      ],
+      "description": "Source of the memory"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "FACT",
+        "MEMORY",
+        "DECISION",
+        "GOAL",
+        "PREDICTION",
+        "LESSON",
+        "INTERPRETATION",
+        "UNKNOWN"
+      ],
+      "description": "Memory type from the 8-type enum"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Confidence score (0.0-1.0)"
+    },
+    "relations": {
+      "type": "array",
+      "description": "Array of relation objects",
+      "items": {
+        "type": "object",
+        "required": ["type", "target_id"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["relates-to", "supports", "contradicts", "supersedes"],
+            "description": "Relation type"
+          },
+          "target_id": {
+            "type": "string",
+            "description": "Target memory ID"
+          }
+        }
+      }
+    },
+    "encryption_flag": {
+      "type": "string",
+      "enum": ["none", "optional", "mandatory"],
+      "description": "Encryption requirement per memory type policy"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional type-specific metadata",
+      "properties": {
+        "resolution": {
+          "type": "string",
+          "description": "Lesson resolution description"
+        },
+        "outcome": {
+          "type": "string",
+          "description": "Prediction outcome"
+        },
+        "decision_id": {
+          "type": "string",
+          "description": "Linked decision ID"
+        },
+        "horizons": {
+          "type": "object",
+          "description": "Short/medium/long horizons (PREDICTION)",
+          "properties": {
+            "short": {"type": "string"},
+            "medium": {"type": "string"},
+            "long": {"type": "string"}
+          }
+        },
+        "approved": {
+          "type": "boolean",
+          "description": "Whether interpretation/reflection has been approved"
+        },
+        "draft": {
+          "type": "string",
+          "description": "Draft content (INTERPRETATION/REFLECTION)"
+        }
+      },
+      "additionalProperties": true
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Schema version, starts at 1"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 creation timestamp"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO8601 last update timestamp"
+    }
+  },
+  "additionalProperties": false,
+  "description": "JSON Schema v2 for DECIA typed memories. Backward compatible: legacy entries with {id, text, date, type, source} are enriched by the migration tool."
+}
